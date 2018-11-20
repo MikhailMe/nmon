@@ -58,7 +58,7 @@ static char *SccsId = "nmon " VERSION;
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-/* Windows moved here so they can be cleared when the screen mode changes */
+/* Окна переместилась сюда, чтобы их можно было очистить при изменении режима экрана */
 WINDOW *padwelcome = NULL;
 WINDOW *padtop = NULL;
 WINDOW *padmem = NULL;
@@ -1838,6 +1838,7 @@ void get_intel_spec()
 int stat8 = 0;			/* used to determine the number of variables on a cpu line in /proc/stat */
 int stat10 = 0;			/* used to determine the number of variables on a cpu line in /proc/stat */
 
+/***************************************** GETS /proc/stat *******************************************************/
 
 void proc_cpu()
 {
@@ -2009,10 +2010,10 @@ void proc_cpu()
 	sscanf(&proc[P_STAT].line[block_line][0], "procs_blocked %lld",
 	       &p->cpu_total.blocked);
 
-    /* If we had a change in the number of CPUs, copy current interval data to the previous, so we
-     * get a "0" utilization interval, but better than negative or 100%.
-     * Heads-up - This effects POWER SMT changes too.
-     */
+    /* Если бы мы изменили количество процессоров, скопируйте данные текущего интервала в предыдущие, так что мы
+     * получить интервал использования «0», но лучше, чем отрицательный или 100%.
+     * Heads-up - это эффекты POWER SMT тоже.
+     */
     if (old_cpus != cpus) {
 	memcpy((void *) &(q->cpu_total), (void *) &(p->cpu_total),
 	       sizeof(struct cpu_stat));
@@ -2023,6 +2024,8 @@ void proc_cpu()
     /* Flag that we processed /proc/stat data; re-set in proc_read() when we re-read /proc/stat */
     proc_cpu_done = 1;
 }
+
+/************************************************ GETS /prc/nfs  ************************************************/
 
 void proc_nfs()
 {
@@ -2137,6 +2140,8 @@ proc4ops 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
     }
 }
 
+
+
 void proc_kernel()
 {
     int i;
@@ -2162,6 +2167,8 @@ char *proc_find_sb(char *p)
 	    return p;
     return 0;
 }
+
+/********************************************* GETS about disks *************************************************/
 
 #define DISK_MODE_IO 1
 #define DISK_MODE_DISKSTATS 2
@@ -2222,7 +2229,7 @@ void proc_disk_io(double elapsed)
     }
 }
 
-/****************************************************************************************************************/
+/**************************************************  PRINT DISK STATS ************************************************/
 
 void proc_diskstats(double elapsed)
 {
@@ -2259,7 +2266,7 @@ void proc_diskstats(double elapsed)
 	    p->dk[i].dk_name[0] =
 	    p->dk[i].dk_reads =
 	    p->dk[i].dk_rmerge =
-	    p->dk[i].dk_rkb =
+	    p->dk[i].dk_rkb =																																																																													
 	    p->dk[i].dk_rmsec =
 	    p->dk[i].dk_writes =
 	    p->dk[i].dk_wmerge =
@@ -2315,6 +2322,10 @@ void proc_diskstats(double elapsed)
 	rewind(fp);
     disks = i;
 }
+
+/*************************************************************************************************************/
+
+/*************************************** proc partions  **************************************************/
 
 void strip_spaces(char *s)
 {
@@ -2450,7 +2461,7 @@ void proc_disk(double elapsed)
 #undef isdigit
 #define isdigit(ch) ( ( '0' <= (ch)  &&  (ch) >= '9')? 0: 1 )
 
-/*****************************************************************************************************************/
+/***************************************** PROC MEM ******************************************************/
 
 long proc_mem_search(char *s)
 {
@@ -2941,6 +2952,9 @@ char *save_word(char *in, char *out)
     return &in[i];
 }
 
+
+/************************************* DISK GROUP ***********************************************************/
+
 #define DGROUPS 64
 #define DGROUPITEMS 512
 
@@ -3168,7 +3182,7 @@ int is_dgroup_name(char *name)
     return 0;
 }
 
-
+/*************************************** ВЫВОД **********************************************/
 
 void hint(void)
 {
@@ -3439,7 +3453,9 @@ void help(void)
     exit(0);
 }
 
-/******************************************/
+/********************************************************************************************************/
+
+/************************************** ОБРАБОТКА ПОЛЬЗОВАТЕЛЯ ********************************************/
 
 #define JFSMAX 128
 #define LOAD 1
@@ -3525,7 +3541,7 @@ struct topper {
 } *topper;
 int topper_size = 200;
 
-/* Routine used by qsort to order the processes by CPU usage */
+/* Процедура, используемая qsort для упорядочения процессов с использованием ЦП */
 int cpu_compare(const void *a, const void *b)
 {
     return (int) (((struct topper *) b)->time -
@@ -3544,7 +3560,7 @@ int disk_compare(const void *a, const void *b)
 }
 
 
-/* checkinput is the subroutine to handle user input */
+/* checkinput - это подпрограмма для обработки ввода пользователя */
 int checkinput(void)
 {
     static int use_env = 1;
@@ -3850,6 +3866,8 @@ void go_background(int def_loops, int def_secs)
 
 /****************************************************************************************************************/
 
+/******************************************** ПОЛУЧЕНИЕ /proc/dev ***********************************************/
+
 void proc_net()
 {
     static FILE *fp = (FILE *) - 1;
@@ -3906,7 +3924,7 @@ Inter-|   Receive                                                |  Transmit
     networks = i;
 }
 
-/*************************************************************************************************************/
+/************************************ ПОЛУЧЕНИЕ /proc/stat ********************************************************/
 
 // /proc/stat
 // В этом файле содержится различная статистическая информация о системе.
@@ -4080,6 +4098,8 @@ int proc_procsinfo(int pid, int index)
 
 /**************************************************************************************************************/
 
+/************************************** ВЫВОД ПОТОКОВ ******************************************/
+
 #ifdef DEBUGPROC
 print_procs(int index)
 {
@@ -4208,15 +4228,15 @@ int getprocs(int details)
 
 char cpu_line[] =
     "---------------------------+-------------------------------------------------+";
-/* Start process as specified in cmd in a child process without waiting
- * for completion
- * not sure if want to prevent this funcitonality for root user
- * when: CHLD_START, CHLD_SNAP or CHLD_END
- * cmd:  pointer to command string - assumed to be cleansed ....
- * timestamp_type: 0 - T%04d, 1 - detailed time stamp
- * loop: loop id (0 for CHLD_START)
- * the_time: time to use for timestamp generation
- */
+/* Запустите процесс, указанный в cmd в дочернем процессе, не ожидая
+  * для завершения
+  * Не уверен, хотите ли вы предотвратить эту функциональность для пользователя root
+  * когда: CHLD_START, CHLD_SNAP или CHLD_END
+  * cmd: указатель на командную строку - предполагается очистить ....
+  * timestamp_type: 0 - T% 04d, 1 - подробная отметка времени
+  * loop: идентификатор цикла (0 для CHLD_START)
+  * the_time: время использования для создания временной метки
+  */
 void child_start(int when,
 		 char *cmd, int timestamp_type, int loop, time_t the_time)
 {
@@ -4291,8 +4311,12 @@ void child_start(int when,
 
 /*****************************************************************************************************************/
 
+
+/********************************************** MAIN ************************************************************/
 int main(int argc, char **argv)
 {
+
+	/****************************************** "ОБРАБОТКА ПОЛЬЗОВАТЕТЯ" ****************************************/
     int secs;
     int cpu_idle;
     int cpu_user;
@@ -4486,11 +4510,11 @@ int main(int argc, char **argv)
 
     /* Check the version of OS */
     uname(&uts);
-    /* Get the clock ticks persecond for CPU counters in /proc/stat cpu stats */
+    /* Получить тиков в секунду для счетчиков процессора в / Proc / Статистика стат CPU */
     ticks = sysconf(_SC_CLK_TCK);
     if (ticks == -1 || ticks == 0)
 	ticks = 100;
-    /* Check if we have the large 64 KB memory page sizes compiled into the kernel */
+    /* Проверьте, есть ли у нас большие размеры страниц памяти 64 КБ, скомпилированные в ядро */
     if (sysconf(_SC_PAGESIZE) > 1024 * 4)
 	pagesize = sysconf(_SC_PAGESIZE);
     proc_init();
@@ -4648,7 +4672,7 @@ int main(int argc, char **argv)
 	    break;
 	}
     }
-    /* Set parameters if not set by above */
+    /* Задайте параметры, если они не установлены выше */
     if (maxloops == -1)
 	maxloops = 9999999;
     if (seconds == -1)
@@ -4668,16 +4692,16 @@ int main(int argc, char **argv)
     }
 #endif				/* NVIDIA_GPU */
 
-    /* To get the pointers setup */
+    /* Чтобы настроить указатели */
     switcher();
 
-    /* Initialise the time stamps for the first loop */
+    /* Инициализировать отметки времени для первого цикла */
     p->time = doubletime();
     q->time = doubletime();
 
     find_release();
 
-    /* Determine number of active LOGICAL cpu - depends on SMT mode ! */
+    /* Определить количество активных логических процессоров - зависит от режима SMT! */
     get_cpu_cnt();
     max_cpus = old_cpus = cpus;
 #if X86 || ARM
@@ -4702,6 +4726,9 @@ int main(int argc, char **argv)
     cpu_peak = MALLOC(sizeof(double) * (CPUMAX + 1));	/* MAGIC */
     for (i = 0; i < max_cpus + 1; i++)
 	cpu_peak[i] = 0.0;
+
+
+/*********************************** ПОЛУЧАЕМ НУЖНЫЕ СТАТИСТИКИ *************************************************/
 
     n = getprocs(0);
     p->procs = MALLOC(sizeof(struct procsinfo) * n + 8);
@@ -4728,9 +4755,9 @@ int main(int argc, char **argv)
 	net_write_peak[i] = 0.0;
     }
 
-    /* If we are running in spreadsheet mode initialize all other data sets as well
-     * so we do not get incorrect data for the first reported interval
-     */
+    /* Если мы работаем в режиме электронных таблиц, инициализируем все остальные наборы данных
+     *, поэтому мы не получаем неверные данные за первый отчетный интервал
+     */
     if (!cursed) {
 	/* Get VM Stats */
 	read_vmstat();
@@ -4743,17 +4770,19 @@ int main(int argc, char **argv)
 	proc_lparcfg();
 #endif
     }
-    /* Set the pointer ready for the next round */
+    /* Установите указатель на следующий раунд */
     switcher();
 
-    /* Initialise signal handlers so we can tidy up curses on exit */
+    /* Инициализация обработчиков сигналов, чтобы мы могли забрать проклятия при выходе */
     signal(SIGUSR1, interrupt);
     signal(SIGUSR2, interrupt);
     signal(SIGINT, interrupt);
     signal(SIGWINCH, interrupt);
     signal(SIGCHLD, interrupt);
 
-    /* Start Curses */
+/***************************************************************************************************************/
+
+    /* Начало проклятий */
     if (cursed) {
 	initscr();
 	cbreak();
@@ -4791,7 +4820,7 @@ int main(int argc, char **argv)
 
 
     } else {
-	/* Output the header lines for the spread sheet */
+	/* Вывести строки заголовков для электронной таблицы*/
 	timer = time(0);
 	tim = localtime(&timer);
 	tim->tm_year += 1900 - 2000;	/* read localtime() manual page!! */
@@ -4811,7 +4840,7 @@ int main(int argc, char **argv)
 	    printf("nmon: output filename=%s\n", str);
 	    exit(42);
 	}
-	/* disconnect from terminal */
+	/* отсоединить от терминала */
 	fflush(NULL);
 	if (!debug && (childpid = fork()) != 0) {
 	    if (ralfmode)
@@ -4825,11 +4854,13 @@ int main(int argc, char **argv)
 	    setpgrp();		/* become process group leader */
 	    signal(SIGHUP, SIG_IGN);	/* ignore hangups */
 	}
-	/* Do the nmon_start activity early on */
+	/* В начале действия nmon_start */
 	if (nmon_start) {
 	    timer = time(0);
 	    child_start(CHLD_START, nmon_start, time_stamp_type, 1, timer);
 	}
+
+/********************************** ПОКАЗЫВАЕМ СТАТИСТИКУ НА ПЕРВОМ ЭКРАНЕ ************************************/
 
 	if (show_aaa) {
 	    fprintf(fp, "AAA,progname,%s\n", progname);
@@ -5025,6 +5056,9 @@ int main(int argc, char **argv)
 		    "TOP,+PID,Time,%%CPU,%%Usr,%%Sys,Size,ResSet,ResText,ResData,ShdLib,MinorFault,MajorFault,Command,Threads,IOwaitTime\n");
 #endif
 	}
+
+/*****************************************************************************************************************/
+
 	linux_bbbp("/etc/release", "/bin/cat /etc/*ease 2>/dev/null",
 		   WARNING);
 	linux_bbbp("lsb_release", "/usr/bin/lsb_release -a 2>/dev/null",
@@ -5127,45 +5161,47 @@ int main(int argc, char **argv)
 		   "/bin/cat /proc/ppc64/lparcfg 2>/dev/null", WARNING);
 	linux_bbbp("lscfg-v", "/usr/sbin/lscfg -v 2>/dev/null", WARNING);
 #endif
-	sleep(1);		/* to get the first stats to cover this one second and avoids divide by zero issues */
+	sleep(1);		/* чтобы получить первую статистику для покрытия этой секунды и избегать деления на нулевые проблемы */
     }
-    /* To get the pointers setup */
-    /* Was already done earlier, DONT'T switch back here to the old pointer! - switcher(); */
-    /*checkinput(); */
+/* Чтобы настроить указатели */
+     /* Уже было сделано раньше, НЕ переключайтесь обратно на старый указатель! - switcher (); */
+     /* Checkinput (); */
     clear();
     fflush(NULL);
 #ifdef POWER
     lparcfg.timebase = -1;
 #endif
 
-    /* Main loop of the code */
+/********************************* ОСНОВНОЙ ЦИКЛ КОДА *******************************************************/
+
+    /* Основной цикл кода */
     for (loop = 1;; loop++) {
-	/* Save the time and work out how long we were actually asleep
-	 * Do this as early as possible and close to reading the CPU statistics in /proc/stat
+	/* Сэкономьте время и выясните, как долго мы действительно спали
+	 * Сделайте это как можно раньше и близко к чтению статистики CPU в / proc / stat
 	 */
 	p->time = doubletime();
 	elapsed = p->time - q->time;
 	timer = time(0);
 	tim = localtime(&timer);
 
-	/* Get current count of CPU
-	 * As side effect /proc/stat is read
+	/* Получить текущее количество CPU
+	 * В качестве побочного эффекта / proc / stat читается
 	 */
 	old_cpus = cpus;
 	get_cpu_cnt();
 #ifdef POWER
-	/* Always get lpar info as well so we can report physical CPU usage
-	 * to make data more meaningful. Return value is ignored here, but
-	 * remembered in proc_lparcfg() !
+	/* Всегда получайте информацию о lpar, чтобы мы могли сообщать о физическом использовании ЦП
+	 * сделать данные более значимыми. Возвращаемое значение здесь игнорируется, но
+	 * Запомнился в proc_lparcfg ()!
 	 */
 	proc_lparcfg();
 #endif
 
-	if (loop <= 3)		/* This stops the nmon causing the cpu peak at startup */
+	if (loop <= 3)		/* Это останавливает nmon, вызывающий пик процессора при запуске*/
 	    for (i = 0; i < max_cpus + 1; i++)
 		cpu_peak[i] = 0.0;
 
-	/* Reset the cursor position to top left */
+	/* Сбросить позицию курсора в верхнем левом углу */
 	y = x = 0;
 
 	if (cursed) {		/* Top line */
@@ -5217,6 +5253,9 @@ mvwprintw(padwelcome,x+8, 3, "------------------------------");
 		mvwprintw(padwelcome, x + 5, 40,
 			  "To stop nmon type q to Quit");
 		COLOUR wattrset(padwelcome, COLOR_PAIR(1));
+
+/*******************************************************************************************************************/
+
 #ifdef POWER 
 		get_cpu_cnt();
 		proc_read(P_CPUINFO);
@@ -5618,9 +5657,9 @@ mvwprintw(padwelcome,x+8, 3, "------------------------------");
 			      "|0          |25         |50          |75       100|");
 		}		/* if (show_smp) AND if(cursed) */
 #ifdef POWER
-		/* Always get lpar info as well so we can report physical CPU usage
-		 * to make data more meaningful
-		 * This assumes that LPAR info is available in q and p !
+		/* Всегда получайте информацию о lpar, чтобы мы могли сообщать о физическом использовании ЦП
+		 * сделать данные более значимыми
+		 * Это предполагает, что информация LPAR доступна в q и p!
 		 */
 		if (proc_lparcfg() > 0) {
 		    if (lparcfg.shared_processor_mode == 1) {
@@ -5668,7 +5707,7 @@ mvwprintw(padwelcome,x+8, 3, "------------------------------");
 		    cpu_sum =
 			cpu_idle + cpu_user + cpu_sys + cpu_wait +
 			cpu_steal;
-		    /* Check if we had a CPU # change and have to set idle to 100 */
+		    /* Проверьте, было ли у меня изменение ЦПУ #, и нужно установить idle на 100 */
 		    if (cpu_sum == 0)
 			cpu_sum = cpu_idle = 100.0;
 		    if (smp_first_time && cursed) {
